@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>Labchain campus demo</title>
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/small-business.css">
+<link rel="stylesheet" href="css/dropzone.css">
+<script type="text/javascript" src="bower_components/web3/dist/web3.min.js"></script>
+
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/angular.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="app.js"></script>
+<script src="js/connect.js"></script>
+<script src="js/dropzone.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+
+
+    </head>
+
+    <style>
+      body {
+        padding-top: 180px;
+      }
+      @media (min-width: 992px) {
+        body {
+          padding-top: 200px;
+        }
+      }
+
+    </style>
+
+
+
+<body ng-app ="labchainApp"  ng-controller="labchainCtl">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#"><img src="LabchainLogoBig.png"></a>
+
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#top">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#login">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#send_tx">Send</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#get_tx">Find</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    
+<div class="container">
+
+<h2>
+<p id="top">Node information</p>
+</h2>
+    Node: {{nodeinfo}}<br>
+    Account: {{account}}<br>
+    Balance: {{balance}}<br>
+    Ltest block: {{blockNumber}}<br>
+<hr>
+<h2>
+<p id="login">Authenticate</p>
+</h2>
+<button ng-click="perform_login()">Login with hardware key</button><br>
+Public key: {{pk}}<br>
+
+<hr>
+<h2>
+<p id="send_tx">Send transaction</p>
+</h2>
+<input type="text"   ng-model="tx_message" </input>
+<button ng-click="send_tx(tx_message)">Send 0.1 Ether with message: {{tx_message}}</button><br>
+Transaction_ID: <a href="https://ropsten.etherscan.io/tx/{{tx}}" target="_blank">{{tx}}</a><br>
+
+
+<hr>
+<H2><p id="get_tx">Get transactions</p>
+</H2>
+<button ng-click="get_tx()">Search</button><br>
+Status: {{status}}<br>
+Latest transaction : {{txhash}}<br>
+From : {{from}}<br>
+To : {{to}}<br>
+Value : {{value}}<br>
+Timestamp (GMT) : {{timestamp}}<br>
+Data: {{input}}
+
+
+<hr>
+<H2><p id="upload">Upload file</p>
+</H2>
+
+<form action="uploadproc.php" method="POST" class="dropzone" id="labchainzone" enctype="multipart/form-data" style="border:1px solid #000;">
+</form><br>
+ <center> <button id="submit-all" style="height: 40px;">Distribute files</button> </center>
+
+   <script type="text/javascript">
+
+          Dropzone.options.labchainzone = {
+                autoProcessQueue : false,
+                maxFiles: 10,
+	addRemoveLinks: false,
+	dictDefaultMessage: "Drop here",
+	acceptedFiles: ".txt, .labc",
+                init : function() {
+                    var submitButton = document.querySelector("#submit-all")
+                    myDropzone = this; thisDropzone=this;
+                    submitButton.addEventListener("click", function() {
+
+
+
+                        myDropzone.processQueue();  // Tell Dropzone to process all queued files.
+                    }); 
+
+        // scan dir om bestaande files te laten zien.
+
+	 $.get('uploadproc.php', function(data) {
+                $.each(data, function(key,value){
+	if (value.name!='playlist.json'){
+
+
+                var mockFile = { name: value.name, size: value.size };
+	thisDropzone.emit("addedfile", mockFile);
+	thisDropzone.createThumbnailFromUrl(mockFile, value.path + '/' + value.name);    
+	thisDropzone.emit("complete", mockFile);             
+
+}
+
+            });
+             
+        });
+
+
+                   // to handle the added file event
+
+                    this.on("addedfile", function(file) {
+
+                        var removeButton = Dropzone.createElement("<center><button>Delete</button></center>");
+                         // Capture the Dropzone instance as closure.
+                        var _this = this;
+                             
+                        // Listen to the click event
+                        removeButton.addEventListener("click", function(e) {
+                        // Make sure the button click doesn't submit the form:
+                            e.preventDefault();
+                            e.stopPropagation();
+ 
+                        // Remove the file preview.
+                        _this.removeFile(file);
+                        // If you want to the delete the file on the server as well,
+                        // you can do the AJAX request here.
+                        });
+                        file.previewElement.appendChild(removeButton);
+                    });
+                    this.on("maxfilesexceeded", function(file) {
+                                this.removeFile(file);
+                    });
+        
+	    this.on("removedfile", function(file) {
+
+	        $.ajax({
+	        url: "delete.php",
+	        type: "POST",
+	        data: { 'name': file.name}
+	        });
+
+
+});
+
+
+
+            }
+            };
+
+// sorteerfunctionaliteit
+
+   $(function(){
+                $(".dropzone").sortable({
+                    items:'.dz-preview',
+                    cursor: 'move',
+                    opacity: 0.5,
+                    containment: '.dropzone',
+                    distance: 20,
+                    tolerance: 'pointer'
+            });
+});
+
+
+
+   </script>
+
+            </p>
+
+<h2>Logbestand</h2>
+  <p>Transactiehistorie</p>            
+  
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </body>
+
+</html>
